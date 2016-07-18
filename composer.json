@@ -1,5 +1,5 @@
 {
-    "name": "tlshaheen/NationBuilder-PHP",
+    "name": "tlshaheen/nationbuilder-php",
     "description": "A PHP wrapper for NationBuilder's API",
     "keywords": ["NationBuilder", "PHP"],
     "authors": [
