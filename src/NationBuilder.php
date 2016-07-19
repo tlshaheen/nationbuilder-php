@@ -524,6 +524,39 @@ class NationBuilder {
 			}			
 		}		
 	}
+
+    /**
+     * Update a list on NB
+     *
+     * @param $listId
+     * @param $data
+     *      Optional parameters:
+     *          name - the name of the list
+     *          slug - a unique identifier for the list
+     *          author_id - the author of the list
+     *
+     * @return bool
+     * @author tlshaheen
+     * @date   7-19-2016
+     */
+	public function updateList($listId, $data) {
+	    if (!isset($data['list'])) {
+	        $data = [
+	            'list' => $data,
+            ];
+        }
+        $response = $this->fetchData('lists/' . $listId, $data, 'PUT');
+        if (isset($response['list_resource'])) {
+            return $response['list_resource'];
+        } else {
+            if (isset($response['code']) && $response['code'] == 'not_found') {
+                return false;
+            } else {
+                //Otherwise, we aren't sure what the error was, so just return it
+                return $response;
+            }
+        }
+    }
 	
 	/**
 	* Get the access token's resource owner's representation.
