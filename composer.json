@@ -9,15 +9,9 @@
         }
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/tlshaheen/PHP-OAuth2"
-        }
-    ],
     "require": {
         "php": ">=7.0.0",
-        "adoy/oauth2": "dev-master"
+        "tlshaheen/oauth2": "2.0.0"
     },
     "autoload": {
         "psr-0": {"tlshaheen\\NationBuilder": "src/"}

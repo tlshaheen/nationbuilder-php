@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "194bb393f4e2771530174921be8c1ab7",
-    "content-hash": "523fe760c0b7511fd58f0ed73655f67e",
+    "hash": "e8c07f420b5ded0d9a664b40f315ab71",
+    "content-hash": "22a1b1c960eba9fabfab8d59fad86e46",
     "packages": [
         {
-            "name": "adoy/oauth2",
-            "version": "dev-master",
+            "name": "tlshaheen/oauth2",
+            "version": "2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tlshaheen/PHP-OAuth2.git",
-                "reference": "4071d9cd8eedc8a6e97ecbefeab4093aec6fff2b"
+                "reference": "e21c6d608a0860e7c3ae31ddb30dd99670778303"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tlshaheen/PHP-OAuth2/zipball/4071d9cd8eedc8a6e97ecbefeab4093aec6fff2b",
-                "reference": "4071d9cd8eedc8a6e97ecbefeab4093aec6fff2b",
+                "url": "https://api.github.com/repos/tlshaheen/PHP-OAuth2/zipball/e21c6d608a0860e7c3ae31ddb30dd99670778303",
+                "reference": "e21c6d608a0860e7c3ae31ddb30dd99670778303",
                 "shasum": ""
             },
             "require": {
@@ -30,32 +30,32 @@
                     "OAuth2": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL-2.1"
             ],
             "authors": [
                 {
+                    "name": "Berejeb Anis",
+                    "email": "anis.berejeb@gmail.com"
+                },
+                {
                     "name": "Charron Pierrick",
                     "email": "pierrick@webstart.fr"
                 },
                 {
-                    "name": "Berejeb Anis",
-                    "email": "anis.berejeb@gmail.com"
+                    "name": "Luke Shaheen",
+                    "email": "tshaheen07@hotmail.com"
                 }
             ],
-            "description": "Light PHP wrapper for the OAuth 2.0 protocol (based on OAuth 2.0 Authorization Protocol draft-ietf-oauth-v2-15)",
-            "support": {
-                "source": "https://github.com/tlshaheen/PHP-OAuth2/tree/master"
-            },
-            "time": "2016-07-19 12:49:11"
+            "description": "Light PHP wrapper for the OAuth 2.0 protocol (based on OAuth 2.0 Authorization Protocol draft-ietf-oauth-v2-15). Original source at adoy/oauth2",
+            "time": "2016-07-19 20:45:47"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "adoy/oauth2": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
