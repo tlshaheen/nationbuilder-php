@@ -357,16 +357,7 @@ class NationBuilder {
 		
 		$response = $this->fetchData('lists/' . $listid . '/people', $listmembers, 'POST');
 
-		if (!empty($response)) {
-			return $response['tagging'];	
-		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
-		}
+		return $response;
 	}
 	
 	/**
