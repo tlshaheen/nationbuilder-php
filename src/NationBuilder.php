@@ -259,47 +259,7 @@ class NationBuilder {
 				}
 			}
 				//die("<pre>" . print_r($response,1) . "</pre>");
-			if ($response['code'] != '200' && $response['code'] != '201'  && $response['code'] != '204' && $response['code'] != '409' && @$response['result']['code'] != 'no_matches') {
-				if (isset($response['result']['code'])) {
-					$errormessage = '';
-					if (isset($response['result']['message'])) {
-						$errormessage .= $response['result']['message'] . " ";
-					}
-					if (isset($response['result']['description'])) {
-						$errormessage .= ' - ' . $response['result']['description'];
-					}
-					if (isset($response['result']['validation_errors'])) {
-						if (is_array($response['result']['validation_errors'])) {
-							foreach($response['result']['validation_errors'] as $validationerror) {
-								$errormessage .= $validationerror . " ";
-							}
-						} else {
-							$errormessage .= $response['result']['validation_errors'] . " ";
-						}
-					}
-					if (isset($response['result']['parameters'])) {
-						$errormessage .= 'Parameters: ' . json_encode($response['result']['parameters']);
-					}
-					
-					throw new NationBuilderException('Error (' . $response['result']['code'] . '): ' . $errormessage);
-				} else if (isset($response['result']['error'])) {					
-					if ($response['result']['error'] == 'rate_limit_exceeded' || $response['result']['error'] == 'per_second_rate_limit') {
-					
-						$this->setRateLimitedLaravel(true);
-						
-						$ex = new NationBuilderException('Error (Rate Limit): ' . @$response['result']['message']);
-			            $ex->setErrors(array('ratelimit'));
-			            throw $ex;	
-			            
-					} else {
-						throw new NationBuilderException('Error (' . $response['result']['error'] . '): ' . @$response['result']['message'] . ' - ' . @$response['result']['description']);
-					}
-				} else {
-					throw new NationBuilderException('Unknown error. Response (json-encoded): ' . json_encode($response));
-				}
-			} else {
-				return $response['result'];
-			}
+			return $response;
 		} else {	
 			$ex = new NationBuilderException('Error (Rate Limit): ' . $ratelimited);
             $ex->setErrors(array('ratelimit'));
