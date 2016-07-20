@@ -411,28 +411,70 @@ class NationBuilder {
 			return false;
 		}
 	}
-	
-	/**
-	* Get all the lists for a nation
-	*
-	* @author tlshaheen
-	*/
-	public function getLists($page = 1, $per_page = 100) {
-		$data = array('page' => $page, 'per_page' => $per_page);
 
-		$response = $this->fetchData('lists', $data, 'GET');	
+    /**
+     * Get all the lists for a nation
+     * @param int  $perPage
+     * @param null $nextUrl
+     *
+     * @return array
+     * @author TLS
+     * @date   7-19-2016
+     */
+    public function retrieveLists($nextUrl = null, $perPage = 1000) {
+        if (!$nextUrl) {
+            $data = [
+                'limit' => $perPage
+            ];
+            $response = $this->fetchData('lists', $data, 'GET');
+            return $response;
+        } else {
+            //If we are passed a next URL, just hit that URL - no extra criteria needed
+            return $this->fetchData($nextUrl, null);
+        }
+    }
 
-		if (isset($response['results'])) {
-			return $response;
-		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
-		}		
-	}
+    /**
+     * Searchs for a list matching the search parameters. Returns the FIRST match.
+     * @param $searchParams
+     *      Optional parameters
+     *          id
+     *          name - searches for the exact name match
+     *          slug - searches for the exact slug match
+     *          -author_id
+     *          -count
+     *
+     * @return array
+     * @author tlshaheen
+     * @date  7-19-2016
+     */
+    public function findList($searchParams) {
+        //NationBuilder does not have a List search endpoint
+        //Instead, they only offer a index of lists. So we need to iterate over all the lists and try to find a match for our search params
+        $listInfo = null;
+        $first = true;
+        $next = null;
+        while (!empty($lists['next']) || $first == true) {
+            $first = false;
+            //Get the lists
+            $lists = $this->retrieveLists($next);
+            \Log::info(json_encode($lists));
+            if (!empty($lists['results'])) {
+                foreach ($lists['results'] as $listResult) {
+                    foreach ($searchParams as $searchParamField => $searchParamValue) {
+                        if (isset($listResult[$searchParamField]) && $listResult[$searchParamField] == $searchParamValue) {
+                            //We found a match, return the result
+                            return $listResult;
+                        }
+                    }
+                }
+            }
+            if (!empty($lists['next'])) {
+                $next = $lists['next'];
+            }
+        }
+        return null;
+    }
 	
 	/**
 	* Delete a given list
