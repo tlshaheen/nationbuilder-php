@@ -523,7 +523,7 @@ class NationBuilder {
      *
      * @param $listId
      * @param $data
-     *      Optional parameters:
+     *      Required parameters:
      *          name - the name of the list
      *          slug - a unique identifier for the list
      *          author_id - the author of the list
