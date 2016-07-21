@@ -317,6 +317,84 @@ class NationBuilder {
 			}			
 		}
 	}
+
+    /**
+     * Get all the contacts for a person
+     * @param int  $perPage
+     * @param null $nextUrl
+     *
+     * @return array
+     * @author TLS
+     * @date   7-19-2016
+     */
+    public function retrieveContacts($personId = null, $nextUrl = null, $perPage = 1000) {
+        if (!$nextUrl) {
+            $data = [
+                'limit' => $perPage
+            ];
+            $response = $this->fetchData('people/' . $personId . '/contacts', $data, 'GET');
+            return $response;
+        } else {
+            //If we are passed a next URL, just hit that URL - no extra criteria needed
+            return $this->fetchData($nextUrl, null);
+        }
+    }
+
+    /**
+     * Searchs for a contact matching the search parameters. Returns the FIRST match.
+     * @param $searchParams
+     *      Optional parameters
+     *          type_id
+     *          method
+     *          sender_id
+     *          recipient_id
+     *          status
+     *          broadcaster_id
+     *          note
+     *          capital_in_cents
+     *          created_at
+     *
+     * @return array
+     * @author tlshaheen
+     * @date  7-19-2016
+     */
+    public function findContact($personId, $searchParams) {
+        //NationBuilder does not have a Contact search endpoint
+        //Instead, they only offer a index of contacts. So we need to iterate over all the contacts and try to find a match for our search params
+        $contactInfo = null;
+        $first = true;
+        $next = null;
+        while (!empty($contacts['next']) || $first == true) {
+            $first = false;
+            //Get the contacts
+            $contacts = $this->retrieveContacts($personId, $next);
+            if (!empty($contacts['results'])) {
+                foreach ($contacts['results'] as $contactResult) {
+                    //By default, this result is the match
+                    //If we find that one of the fields is not a match, then we'll continue to the next result
+                    $exactMatch = true;
+                    foreach ($searchParams as $searchParamField => $searchParamValue) {
+                        if (!isset($contactResult[$searchParamField]) || $contactResult[$searchParamField] != $searchParamValue) {
+                            //One of the search params does not match
+                            //Continue to the next result
+                            $exactMatch = false;
+                            break;
+                        }
+                    }
+                    if (!$exactMatch) {
+                        continue;
+                    } else {
+                        //We found a match, return the result
+                        return $contactResult;
+                    }
+                }
+            }
+            if (!empty($contacts['next'])) {
+                $next = $contacts['next'];
+            }
+        }
+        return null;
+    }
 	
 	/**
 	* Create a contact type and return the ID and name
