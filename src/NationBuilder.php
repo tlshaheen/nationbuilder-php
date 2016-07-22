@@ -938,7 +938,6 @@ class NationBuilder {
                 'version' => $version,
                 'url' => $url,
                 'event' => $event,
-                'token' => 'specialtoken',
             ],
         ];
         $response = $this->fetchData('webhooks', $webhook, 'POST');
