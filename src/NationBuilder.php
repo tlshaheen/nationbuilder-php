@@ -865,20 +865,16 @@ class NationBuilder {
 		return $outputphone;
 	}
 
-	/**
-	 * Formats a phone number for storing in NationBuilder - comes out as (703) 555-1234
-	 *
-	 * @author prstoddart
-	 */
-	public function formatPhoneForNationBuilder($inputphone) {
-		$outputphone = "";
+    /**
+     * Formats a phone number for storing in NationBuilder - comes out as 7035551234
+     *
+     * @author prstoddart
+     */
+    public function formatPhoneForNationBuilder($inputphone) {
+        $phone = preg_replace("/[^0-9]/", "", $inputphone);
 
-		$phone = $this->formatPhoneForStorage($inputphone);
-
-		$outputphone = "(" . substr($phone,2,3). ") " .substr($phone,5,3). "-" .substr($phone,8,4);
-
-		return $outputphone;
-	}
+        return $phone;
+    }
 
 	public function addSocialCapital($personId, $scAmount, $scName) {
 		return $this->fetchData('people/' . $personId . '/capitals', [
@@ -888,4 +884,67 @@ class NationBuilder {
 			],
 		], 'POST');
 	}
+
+    /**
+     * @return array
+     * @author TLS
+     * @date   7-19-2016
+     */
+    public function retrieveCount() {
+        $response = $this->fetchData('people/count', [], 'GET');
+        if (isset($response['result']['people_count'])) {
+            return $response['result']['people_count'];
+        } else {
+            return $response;
+        }
+    }
+
+    /**
+     * @param null $nextUrl
+     * @param int  $perPage
+     *
+     * @return array
+     * @author TLS
+     * @date   7-22-2016
+     */
+    public function retrievePeople($nextUrl = null, $perPage = 100) {
+        if (!$nextUrl) {
+            $data = [
+                'limit' => $perPage
+            ];
+            $response = $this->fetchData('people', $data, 'GET');
+            if (!empty($response['result'])) {
+                return $response['result'];
+            }
+            return $response;
+        } else {
+            //If we are passed a next URL, just hit that URL - no extra criteria needed
+            return $this->fetchData($nextUrl, null);
+        }
+    }
+
+    /**
+     * @param     $event
+     * @param     $url
+     * @param int $version
+     *
+     * @return array
+     * @author TLS
+     * @date   7-22-2016
+     */
+    public function createWebhook($event, $url, $version = 4) {
+        $webhook = [
+            'webhook' => [
+                'version' => $version,
+                'url' => $url,
+                'event' => $event,
+                'token' => 'specialtoken',
+            ],
+        ];
+        $response = $this->fetchData('webhooks', $webhook, 'POST');
+        if (!empty($response['result']['webhook'])) {
+            return $response['result']['webhook'];
+        }
+        return $response;
+    }
 }
