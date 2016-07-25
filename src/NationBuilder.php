@@ -282,12 +282,7 @@ class NationBuilder {
 		if (isset($response['contact'])) {
 			return $response['contact'];	
 		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
+			return $response;
 		}
 	}
 	
@@ -309,12 +304,7 @@ class NationBuilder {
 			//Return all the pagination info along with the results
 			return $response;	
 		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
+            return $response;
 		}
 	}
 
@@ -409,12 +399,7 @@ class NationBuilder {
 		if (isset($response['contact_type'])) {
 			return $response['contact_type'];	
 		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
+            return $response;
 		}
 	}
 	
@@ -450,12 +435,7 @@ class NationBuilder {
 		if (isset($response['tagging'])) {
 			return $response['tagging'];	
 		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
+            return $response;
 		}
 	}
 	
@@ -556,12 +536,7 @@ class NationBuilder {
 		if (isset($response['results'])) {
 			return $response;
 		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
+            return $response;
 		}		
 	}
 	
@@ -587,12 +562,7 @@ class NationBuilder {
 		if (isset($response['list_resource'])) {
 			return $response['list_resource'];	
 		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
+            return $response;
 		}		
 	}
 
@@ -620,12 +590,7 @@ class NationBuilder {
         if (isset($response['list_resource'])) {
             return $response['list_resource'];
         } else {
-            if (isset($response['code']) && $response['code'] == 'not_found') {
-                return false;
-            } else {
-                //Otherwise, we aren't sure what the error was, so just return it
-                return $response;
-            }
+            return $response;
         }
     }
 	
@@ -634,19 +599,14 @@ class NationBuilder {
 	*
 	* @author tlshaheen
 	*/
-	public function getMe() {
-		$response = $this->fetchData('people/me');	
-		if (isset($response['person'])) {
-			return $response['person'];	
-		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
-		}		
-	}
+    public function getMe() {
+        $response = $this->fetchData('people/me');
+        if (isset($response['result']['person'])) {
+            return $response['result']['person'];
+        } else {
+            return $response;
+        }
+    }
 	
 	/**
 	* Get a person's details based on their ID
@@ -664,12 +624,7 @@ class NationBuilder {
 		if (isset($response['person'])) {
 			return $response['person'];	
 		} else {
-			if (isset($response['code']) && $response['code'] == 'not_found') {
-				return false;
-			} else {
-				//Otherwise, we aren't sure what the error was, so just return it
-				return $response;
-			}			
+            return $response;
 		}
 		
 	}	
@@ -687,15 +642,15 @@ class NationBuilder {
     * @return mixed Returns an empty array if a person was not found, otherwise, returns the normal Person array
 	* @author tlshaheen
 	*/
-	public function matchPerson($criteria) {
-		$response = $this->fetchData('people/match', $criteria);	
-		
-		if (@$response['code'] == 'no_matches') {
-			return array();
-		} else {
-			return $response['person'];
-		}
-	}
+    public function matchPerson($criteria) {
+        $response = $this->fetchData('people/match', $criteria);
+
+        if (!empty($response['person'])) {
+            return $response['person'];
+        } else {
+            return $response;
+        }
+    }
 	
 	/**
 	* Find a set of people who have certain attributes
@@ -876,14 +831,14 @@ class NationBuilder {
         return $phone;
     }
 
-	public function addSocialCapital($personId, $scAmount, $scName) {
-		return $this->fetchData('people/' . $personId . '/capitals', [
-			'capital' => [
-				'content' => $scName,
-				'amount_in_cents' => $scAmount,
-			],
-		], 'POST');
-	}
+    public function addSocialCapital($personId, $params) {
+        if (empty($params['capital'])) {
+            $params['capital'] = $params;
+        }
+        return $this->fetchData('people/' . $personId . '/capitals', [
+            $params
+        ], 'POST');
+    }
 
     /**
      * @return array
