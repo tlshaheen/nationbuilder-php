@@ -12,7 +12,7 @@ class NationBuilder {
 			$accesstoken,
 			$clientslug,
 			$restclient,
-			$headers,
+			$responseHeaders,
 			$ratelimits,
 			$maxsleep = 10, //In seconds
 			$enforceratelimit = true, //Should we enforce the rate limits?
@@ -237,7 +237,7 @@ class NationBuilder {
 
 			//Store all headers, and if possible, seperate the rate limits
 			if (isset($response['headers'])) {
-				$this->headers = $response['headers'];
+				$this->responseHeaders = $response['headers'];
 				
 				if (isset($response['headers']['Nation-Ratelimit-Limit'])) {
 					$this->setRateLimitInfo('nation', 'limit', $response['headers']['Nation-Ratelimit-Limit']);
