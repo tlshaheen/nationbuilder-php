@@ -188,7 +188,11 @@ class NationBuilder {
 	*
 	* @author tlshaheen
 	*/
-	public function fetchData($endpointurl, $params = null, $httpmethod = null, $httpheaders = null, $formcontenttype = null) {
+	public function fetchData($endpointurl, $params = [], $httpmethod = null, $httpheaders = null, $formcontenttype = null) {
+	    if (empty($params)) {
+	        $params = [];
+        }
+
 		$fullurl = '';		
 		$fetchurl = $this->getFetchUrl();
 		if (strpos($endpointurl, $this->getFetchUrl()) === false) {
