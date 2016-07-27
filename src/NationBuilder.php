@@ -872,14 +872,14 @@ class NationBuilder {
                 'limit' => $perPage
             ];
             $response = $this->fetchData('people', $data, 'GET');
-            if (!empty($response['result'])) {
-                return $response['result'];
-            }
-            return $response;
         } else {
             //If we are passed a next URL, just hit that URL - no extra criteria needed
-            return $this->fetchData($nextUrl, null);
+            $response = $this->fetchData($nextUrl, null);
         }
+        if (!empty($response['result'])) {
+            return $response['result'];
+        }
+        return $response;
     }
 
     /**
