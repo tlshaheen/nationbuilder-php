@@ -393,7 +393,6 @@ class NationBuilder
     public function findContact($personId, $searchParams)
     {
         //NationBuilder does not have a Contact search endpoint
-        //Instead, they only offer a index of contacts. So we need to iterate over all the contacts and try to find a match for our search params
         $contactInfo = null;
         $first = true;
         $next = null;
@@ -401,6 +400,43 @@ class NationBuilder
             $first = false;
             //Get the contacts
             $contacts = $this->retrieveContacts($personId, $next);
+            if (!empty($contacts['results'])) {
+                foreach ($contacts['results'] as $contactResult) {
+                    //By default, this result is the match
+                    //If we find that one of the fields is not a match, then we'll continue to the next result
+                    $exactMatch = true;
+                    foreach ($searchParams as $searchParamField => $searchParamValue) {
+                        if (!isset($contactResult[$searchParamField]) || $contactResult[$searchParamField] != $searchParamValue) {
+                            //One of the search params does not match
+                            //Continue to the next result
+                            $exactMatch = false;
+                            break;
+                        }
+                    }
+                    if (!$exactMatch) {
+                        continue;
+                    } else {
+                        //We found a match, return the result
+                        return $contactResult;
+                    }
+                }
+            }
+            if (!empty($contacts['next'])) {
+                $next = $contacts['next'];
+            }
+        }
+        return null;
+    }
+
+    public function findContactMade($searchParams)
+    {
+        $contactInfo = null;
+        $first = true;
+        $next = null;
+        while (!empty($contacts['next']) || $first == true) {
+            $first = false;
+            //Get the contacts made
+            $contacts = $this->client->fetchData('contacts', $searchParams);
             if (!empty($contacts['results'])) {
                 foreach ($contacts['results'] as $contactResult) {
                     //By default, this result is the match
@@ -454,14 +490,15 @@ class NationBuilder
      */
     public function addToList($listid, $listmembers)
     {
+        if (empty ($listmembers)) {
+            return false;
+        }
         if (!is_array($listmembers)) {
-            $listmembers = array($listmembers);
+            $listmembers = [$listmembers];
         }
         if (!isset($listmembers['people_ids'])) {
-            \Log::debug('NB: adding people ids');
-            $listmembers = array('people_ids' => $listmembers);
+            $listmembers = ['people_ids' => $listmembers];
         }
-        \Log::debug('NB:: what we pass' . json_encode($listmembers));
 
         $response = $this->fetchData('lists/' . $listid . '/people', $listmembers, 'POST');
 
