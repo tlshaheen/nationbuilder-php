@@ -428,6 +428,14 @@ class NationBuilder
         return null;
     }
 
+    /**
+     * Find contact made by author_id
+     * @param $searchParams
+     *
+     * @return null
+     * @author tlshaheen
+     * @date   8-10-2016
+     */
     public function findContactMade($searchParams)
     {
         $contactInfo = null;
@@ -436,14 +444,14 @@ class NationBuilder
         while (!empty($contacts['next']) || $first == true) {
             $first = false;
             //Get the contacts made
-            $contacts = $this->client->fetchData('contacts', $searchParams);
+            $contacts = $this->fetchData('contacts', $searchParams, 'GET');
             if (!empty($contacts['results'])) {
                 foreach ($contacts['results'] as $contactResult) {
                     //By default, this result is the match
                     //If we find that one of the fields is not a match, then we'll continue to the next result
                     $exactMatch = true;
                     foreach ($searchParams as $searchParamField => $searchParamValue) {
-                        if (!isset($contactResult[$searchParamField]) || $contactResult[$searchParamField] != $searchParamValue) {
+                        if (!array_key_exists($searchParamField, $contactResult) || $contactResult[$searchParamField] != $searchParamValue) {
                             //One of the search params does not match
                             //Continue to the next result
                             $exactMatch = false;
@@ -457,9 +465,6 @@ class NationBuilder
                         return $contactResult;
                     }
                 }
-            }
-            if (!empty($contacts['next'])) {
-                $next = $contacts['next'];
             }
         }
         return null;
@@ -931,9 +936,14 @@ class NationBuilder
      *
      * @author prstoddart
      */
-    public function formatPhoneForNationBuilder($inputphone)
+    public function formatPhoneForNationBuilder($phone, $us = true)
     {
-        $phone = preg_replace("/[^0-9]/", "", $inputphone);
+        if ($us) {
+            //If phone was prefixed with +1, remove it
+            $phone = str_replace('+1', '', $phone);
+            //Remove any remaining non-numbers
+            $phone = preg_replace("/[^0-9]/", "", $phone);
+        }
 
         return $phone;
     }
