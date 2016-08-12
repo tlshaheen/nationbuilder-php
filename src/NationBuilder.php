@@ -604,7 +604,7 @@ class NationBuilder
             if (!empty($lists['results'])) {
                 foreach ($lists['results'] as $listResult) {
                     foreach ($searchParams as $searchParamField => $searchParamValue) {
-                        if (isset($listResult[$searchParamField]) && $listResult[$searchParamField] == $searchParamValue) {
+                        if (array_key_exists($searchParamField, $listResult) && $listResult[$searchParamField] == $searchParamValue) {
                             //We found a match, return the result
                             return $listResult;
                         }
