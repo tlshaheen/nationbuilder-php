@@ -1020,4 +1020,40 @@ class NationBuilder
         }
         return $response;
     }
+
+    /**
+     * NationBuilder does not have a Webhook search endpoint. Instead, they only offer a index of webhooks.
+     * So we need to iterate over all the webhooks and try to find a match for our search params
+     *
+     * @param $event
+     * @param $url
+     * @param $version
+     *
+     * @return null
+     * @author tlshaheen
+     * @date   8-12-2016
+     */
+    public function findWebhook($event, $url, $version) {
+        $webhookInfo = null;
+        $first = true;
+        $next = null;
+        while (!empty($webhooks['next']) || $first == true) {
+            $first = false;
+            //Get the webhooks
+            $webhooks = $this->fetchData('webhooks', ['limit' => 100], 'GET');
+            if (!empty($webhooks['results'])) {
+                foreach ($webhooks['results'] as $webhookResult) {
+                    //If version, url, and event all match, then this is the webhook we've been searching for
+                    if (
+                        $webhookResult['version'] == $version
+                        && $webhookResult['url'] == $url
+                        && $webhookResult['event'] == $event
+                    ) {
+                        return $webhookResult;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
