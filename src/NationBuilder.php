@@ -1,9 +1,6 @@
 <?php
 namespace tlshaheen\NationBuilder;
 
-//This page shouldn't cause a timeout; sometimes we will sleep so we don't hit a rate limit
-set_time_limit(0);
-
 use tlshaheen\NationBuilder\Exceptions\NationBuilderException;
 
 class NationBuilder
@@ -13,12 +10,7 @@ class NationBuilder
         $accesstoken,
         $clientslug,
         $restclient,
-        $responseHeaders,
-        $ratelimits,
-        $maxsleep = 10, //In seconds
-        $enforceratelimit = true, //Should we enforce the rate limits?
-        $storeratelimitlaravel = false, //Should we use Laravel's cache to store/check if we are currently rate limited or not?
-        $ratelimitedlaravelduration = 2 //Store the rate limited info for 2 minutes - then we should try the next call to come in
+        $responseHeaders
     ;
 
     public function __construct($clientslug, $clientid, $clientsecret, $token)
@@ -26,8 +18,6 @@ class NationBuilder
         $this->setFetchUrl($clientslug);
         $this->accesstoken = $token;
         $this->clientslug = $clientslug;
-
-        $this->setRateLimitedLaravel(false);
 
         $restclient = new \tlshaheen\NationBuilder\Auth\NationBuilderOAuth2($clientslug, $clientid, $clientsecret);
         $this->restclient = $restclient->restclient;
@@ -43,165 +33,6 @@ class NationBuilder
     public function getFetchUrl()
     {
         return $this->fetchurl;
-    }
-
-    public function setRateLimitInfo($category, $type, $value)
-    {
-        $ratelimits = $this->ratelimits;
-        $ratelimits[$category][$type] = $value;
-        $this->ratelimits = $ratelimits;
-        return $this->ratelimits;
-    }
-
-    public function getRateLimitInfo($category, $type)
-    {
-        if (isset($this->ratelimits[$category][$type])) {
-            return $this->ratelimits[$category][$type];
-        } else {
-            return false;
-        }
-    }
-
-    public function setStoreRateLimitLaravel($x)
-    {
-        $this->storeratelimitlaravel = $x;
-        return true;
-    }
-
-    public function getStoreRateLimitLaravel()
-    {
-        return $this->storeratelimitlaravel;
-    }
-
-    public function rateLimitedLaravel()
-    {
-        if ($this->getStoreRateLimitLaravel() === true) {
-            return $this->getRateLimitedLaravel();
-        }
-        //We are not rate limited by default
-        return false;
-    }
-
-    public function setRateLimitedLaravel($x)
-    {
-        //Store it for X minutes - so in X minutes, we'll try another post
-        \Cache::tags('NationBuilder-API-' . $this->clientslug)->put('ratelimitedlaravel', $x,
-            $this->getRateLimitedLaravelDuration());
-        return true;
-    }
-
-    public function getRateLimitedLaravel()
-    {
-        if (\Cache::tags('NationBuilder-API-' . $this->clientslug)->has('ratelimitedlaravel')) {
-            return \Cache::tags('NationBuilder-API-' . $this->clientslug)->get('ratelimitedlaravel');
-        } else {
-            //We are not rate limited by default
-            return false;
-        }
-    }
-
-    public function setRateLimitedLaravelDuration($x)
-    {
-        if (!ctype_digit(strval($x)) || $x < 1) {
-            $x = 2;
-        }
-        $this->ratelimitedlaravelduration = $x;
-        return true;
-    }
-
-    public function getRateLimitedLaravelDuration()
-    {
-        return $this->ratelimitedlaravelduration;
-    }
-
-    /**
-     * Have we hit our rate limit ceiling?
-     * If we have, and there are 10 or less seconds remaining until we can go again, just sleep 10 seconds
-     * Otherwise, return true, yes, we are at the ceiling and should NOT make another call
-     *
-     * @author tlshaheen
-     */
-    public function rateLimited()
-    {
-        if ($this->enforceratelimit === true) {
-            if ($this->rateLimitedLaravel() === true) {
-                $ratelimitcause = 'No call to NationBuilder made - last call was rate limited. Waiting ' . $this->getRateLimitedLaravelDuration() . ' minutes to try another call.';
-                $this->setRateLimitedLaravel(true);
-                return $ratelimitcause;
-            }
-
-            $maxsleep = $this->maxsleep; //We don't want to sleep more than X seconds to reset a ceiling
-            $timetosleep = 0;
-            $ratelimitcause = '';
-            $limitreached = false;
-
-            //First, check the nation limit
-            $remaining = $this->getRateLimitInfo('nation', 'remaining');
-            if ($remaining < 1 && $remaining !== false) {
-                //If we don't have any remaining calls for the nation, check if we are close enough to the reset that we can sleep and then make a call
-                $date = $this->getRateLimitInfo('nation', 'reset');
-                if ($date) {
-                    try {
-                        $nationresettime = new \DateTime(strtotime($date));
-                    } catch (\Exception $e) {
-                        $nationresettime = null;
-                    }
-                    if ($nationresettime) {
-                        $now = new \DateTime();
-                        $diffseconds = $nationresettime->getTimestamp() - $now->getTimestamp();
-
-                        if ($diffseconds <= $maxsleep) {
-                            //Set the amount of time to sleep after we check our other rate limits
-                            //This number can be negative, but we will take care of that when we go to actually sleep
-                            $timetosleep = $diffseconds;
-                        } else {
-                            $ratelimitcause = 'Nation calls have reached their limit.';
-                            $limitreached = true;
-                        }
-                    } else {
-                        $timetosleep = 0;
-                    }
-                } else {
-                    $ratelimitcause = 'Nation calls have reached their limit.';
-                    $limitreached = true;
-                }
-            }
-
-            //Now check the token rate limit
-            if ($limitreached !== true) {
-                $remaining = $this->getRateLimitInfo('token', 'remaining');
-                if ($remaining < 1 && $remaining !== false) {
-                    $resetseconds = $this->getRateLimitInfo('token', 'reset');
-                    //We only want to sleep if the sleep required here is longer than the time we are already scheduled to sleep
-                    if ($resetseconds <= $maxsleep && $resetseconds > $timetosleep) {
-                        $timetosleep = $resetseconds;
-                    } else {
-                        $limitreached = true;
-                        $ratelimitcause = 'Token calls have reached their limit.';
-                    }
-                }
-            }
-
-            //If $timetosleep never gets changed to an int, then we don't have any call limit data to process and we should make a call
-            if ($limitreached !== true) {
-                //Sleep if $timetosleep is postive
-                $timetosleep = intval($timetosleep);
-                if ($timetosleep > 0) {
-                    sleep($timetosleep);
-                }
-                //Make the call
-                $this->setRateLimitedLaravel(false);
-                return false;
-            }
-
-            //If we make it here, we've hit a rate limit and can't sleep it off
-            $this->setRateLimitedLaravel(true);
-            return $ratelimitcause;
-        } else {
-            //We aren't enforcing rating limits - make the call
-            $this->setRateLimitedLaravel(false);
-            return false;
-        }
     }
 
     /**
@@ -251,61 +82,35 @@ class NationBuilder
             $fullurl .= "access_token=" . $this->accesstoken;
         }
 
-        $ratelimited = $this->rateLimited();
-        if ($ratelimited === false) {
-            //We want to use fetch()'s defaults, so don't pass a setting if it hasn't been set by the user
-            if (isset($params) && isset($httpmethod) && isset($httpheaders) && isset($formcontenttype)) {
-                $response = $this->restclient->fetch($fullurl, $params, $httpmethod, $httpheaders, $formcontenttype);
+        //We want to use fetch()'s defaults, so don't pass a setting if it hasn't been set by the user
+        if (isset($params) && isset($httpmethod) && isset($httpheaders) && isset($formcontenttype)) {
+            $response = $this->restclient->fetch($fullurl, $params, $httpmethod, $httpheaders, $formcontenttype);
+        } else {
+            if (isset($params) && isset($httpmethod) && isset($httpheaders)) {
+                $response = $this->restclient->fetch($fullurl, $params, $httpmethod, $httpheaders);
             } else {
-                if (isset($params) && isset($httpmethod) && isset($httpheaders)) {
-                    $response = $this->restclient->fetch($fullurl, $params, $httpmethod, $httpheaders);
+                if (isset($params) && isset($httpmethod)) {
+                    $response = $this->restclient->fetch($fullurl, $params, $httpmethod);
                 } else {
-                    if (isset($params) && isset($httpmethod)) {
-                        $response = $this->restclient->fetch($fullurl, $params, $httpmethod);
+                    if (isset($params)) {
+                        $response = $this->restclient->fetch($fullurl, $params);
                     } else {
-                        if (isset($params)) {
-                            $response = $this->restclient->fetch($fullurl, $params);
-                        } else {
-                            $response = $this->restclient->fetch($fullurl);
-                        }
+                        $response = $this->restclient->fetch($fullurl);
                     }
                 }
             }
-
-            //Store all headers, and if possible, seperate the rate limits
-            if (isset($response['headers'])) {
-                $this->responseHeaders = $response['headers'];
-
-                if (isset($response['headers']['Nation-Ratelimit-Limit'])) {
-                    $this->setRateLimitInfo('nation', 'limit', $response['headers']['Nation-Ratelimit-Limit']);
-                }
-                if (isset($response['headers']['Nation-Ratelimit-Remaining'])) {
-                    $this->setRateLimitInfo('nation', 'remaining', $response['headers']['Nation-Ratelimit-Remaining']);
-                }
-                if (isset($response['headers']['Nation-Ratelimit-Reset'])) {
-                    $this->setRateLimitInfo('nation', 'reset', $response['headers']['Nation-Ratelimit-Reset']);
-                }
-                if (isset($response['headers']['X-Ratelimit-Limit'])) {
-                    $this->setRateLimitInfo('token', 'limit', $response['headers']['X-Ratelimit-Limit']);
-                }
-                if (isset($response['headers']['X-Ratelimit-Remaining'])) {
-                    $this->setRateLimitInfo('token', 'remaining', $response['headers']['X-Ratelimit-Remaining']);
-                }
-                if (isset($response['headers']['X-Ratelimit-Reset'])) {
-                    $this->setRateLimitInfo('token', 'reset', $response['headers']['X-Ratelimit-Reset']);
-                }
-            }
-
-            if (isset($response['result'])) {
-                return $response['result'];
-            }
-            //die("<pre>" . print_r($response,1) . "</pre>");
-            return $response;
-        } else {
-            $ex = new NationBuilderException('Error (Rate Limit): ' . $ratelimited);
-            $ex->setErrors(array('ratelimit'));
-            throw $ex;
         }
+
+        //Store all headers, and if possible, seperate the rate limits
+        if (isset($response['headers'])) {
+            $this->responseHeaders = $response['headers'];
+        }
+
+        if (isset($response['result'])) {
+            return $response['result'];
+        }
+        //die("<pre>" . print_r($response,1) . "</pre>");
+        return $response;
     }
 
     /**
