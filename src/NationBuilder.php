@@ -1,6 +1,9 @@
 <?php
 namespace tlshaheen\NationBuilder;
 
+//This page shouldn't cause a timeout; sometimes we will sleep so we don't hit a rate limit
+set_time_limit(0);
+
 use tlshaheen\NationBuilder\Exceptions\NationBuilderException;
 
 class NationBuilder
@@ -101,9 +104,17 @@ class NationBuilder
             }
         }
 
-        //Store all headers, and if possible, seperate the rate limits
+        //Store all headers, and if possible, separate the rate limits
         if (isset($response['headers'])) {
             $this->responseHeaders = $response['headers'];
+
+            if (
+                (isset($this->responseHeaders['X-Ratelimit-Remaining']) && $this->responseHeaders['X-Ratelimit-Remaining'] < 1)
+                && (isset($this->responseHeaders['Nation-Ratelimit-Remaining']) && $this->responseHeaders['Nation-Ratelimit-Remaining'] < 1)
+            ) {
+                $ex = new NationBuilderException('Error: Rate Limited', 429);
+                throw $ex;
+            }
         }
 
         if (isset($response['result'])) {
@@ -111,6 +122,7 @@ class NationBuilder
         }
         //die("<pre>" . print_r($response,1) . "</pre>");
         return $response;
+
     }
 
     /**
