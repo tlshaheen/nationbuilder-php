@@ -110,7 +110,7 @@ class NationBuilder
 
             if (
                 (isset($this->responseHeaders['X-Ratelimit-Remaining']) && $this->responseHeaders['X-Ratelimit-Remaining'] < 1)
-                && (isset($this->responseHeaders['Nation-Ratelimit-Remaining']) && $this->responseHeaders['Nation-Ratelimit-Remaining'] < 1)
+                || (isset($this->responseHeaders['Nation-Ratelimit-Remaining']) && $this->responseHeaders['Nation-Ratelimit-Remaining'] < 1)
             ) {
                 $ex = new NationBuilderException('Error: Rate Limited', 429);
                 throw $ex;
