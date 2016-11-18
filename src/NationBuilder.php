@@ -283,6 +283,8 @@ class NationBuilder
                     }
                 }
             }
+            //Sleep for 1 second to prevent rate limits
+            usleep(1000000);
         }
         return null;
     }
