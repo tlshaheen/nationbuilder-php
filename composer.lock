@@ -4,21 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e8c07f420b5ded0d9a664b40f315ab71",
-    "content-hash": "22a1b1c960eba9fabfab8d59fad86e46",
+    "content-hash": "8691012686ad61b81abbc55f3fbc6fd9",
     "packages": [
         {
             "name": "tlshaheen/oauth2",
-            "version": "2.0",
+            "version": "2.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tlshaheen/PHP-OAuth2.git",
-                "reference": "e21c6d608a0860e7c3ae31ddb30dd99670778303"
+                "reference": "9077c6511fe1fd9ccc4ae715d342d580e2087fa4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tlshaheen/PHP-OAuth2/zipball/e21c6d608a0860e7c3ae31ddb30dd99670778303",
-                "reference": "e21c6d608a0860e7c3ae31ddb30dd99670778303",
+                "url": "https://api.github.com/repos/tlshaheen/PHP-OAuth2/zipball/9077c6511fe1fd9ccc4ae715d342d580e2087fa4",
+                "reference": "9077c6511fe1fd9ccc4ae715d342d580e2087fa4",
                 "shasum": ""
             },
             "require": {
@@ -49,7 +48,7 @@
                 }
             ],
             "description": "Light PHP wrapper for the OAuth 2.0 protocol (based on OAuth 2.0 Authorization Protocol draft-ietf-oauth-v2-15). Original source at adoy/oauth2",
-            "time": "2016-07-19 20:45:47"
+            "time": "2017-01-02T18:39:06+00:00"
         }
     ],
     "packages-dev": [],
