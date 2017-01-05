@@ -268,6 +268,11 @@ class NationBuilder
                     //If we find that one of the fields is not a match, then we'll continue to the next result
                     $exactMatch = true;
                     foreach ($searchParams as $searchParamField => $searchParamValue) {
+                        //Convert timestamps to epoch time
+                        if ($searchParamField == 'created_at') {
+                            $contactResult[$searchParamField] = strtotime($contactResult[$searchParamField]);
+                            $searchParamValue = strtotime($searchParamValue);
+                        }
                         if (!array_key_exists($searchParamField, $contactResult) || $contactResult[$searchParamField] != $searchParamValue) {
                             //One of the search params does not match
                             //Continue to the next result
