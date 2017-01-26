@@ -263,7 +263,7 @@ class NationBuilder
         while (!empty($contacts['next']) || $first == true) {
             $first = false;
             //Get the contacts made
-            $contacts = $this->fetchData('contacts', $searchParams, 'GET');
+            $contacts = $this->fetchData('contacts', $queryParams, 'GET');
             if (!empty($contacts['results'])) {
                 foreach ($contacts['results'] as $contactResult) {
                     //By default, this result is the match
