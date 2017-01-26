@@ -258,6 +258,8 @@ class NationBuilder
         $contactInfo = null;
         $first = true;
         $next = null;
+        $queryParams = $searchParams;
+        $queryParams['limit'] = 1000;
         while (!empty($contacts['next']) || $first == true) {
             $first = false;
             //Get the contacts made
